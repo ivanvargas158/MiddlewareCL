@@ -1,4 +1,5 @@
 from pathlib import Path
+from pydantic import field_validator,fields,Field
 
 #Prod
 # DB_Host = "c-synapsevue-prod.ligp6eniqvdyez.postgres.cosmos.azure.com"
@@ -24,13 +25,13 @@ Outlook_Folder_to_Move_Internal_Emails = "Internal Emails"
 
 Agent_Emails = {}
 
-Openai_Api_Key = Openai_API_Key = "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"
+Openai_Api_Key =  Field(validation_alias="Openai_Api_Key") 
 Openai_Base_Url = "https://api.openai.com/v1"
 Openai_Base_Model = "gpt-4.1-mini"
 
-Openai_Api_Key_Vision = "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"
+Openai_Api_Key_Vision = Field(validation_alias="Openai_Api_Key_Vision") 
 
-Gpt_Trainer_Beaer_Key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTczOTI5NDMzMiwianRpIjoiNDVmYWQwYjctYmY1Yy00Nzg3LTkwODEtM2FmODA0OGRlZGI4IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJhcGlfa2V5IjoiNTZiNGRlOTYxYTA3M2I3ZmRlM2NmNmY2ZjY5NGYyN2ZlOGFjNzExN2Q2MTcyOGRmMmExY2ZiOWY2ZmMzZDcwOCJ9LCJuYmYiOjE3MzkyOTQzMzJ9.hJrh4xaKiKDGaoCto_OKkVG27g6j1kxsetN3TrlMNf0"
+Gpt_Trainer_Beaer_Key = Field(validation_alias="Gpt_Trainer_Beaer_Key") 
 Gpt_UUID = "8aa67d30b71648a295407f00f916548d"
 
 Gpt_Trainer_Beaer_Key_Format_Error = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MDIzMjA3NSwianRpIjoiNzJlODkxNDQtY2Y2NS00NDRjLTgyZWEtNjU0MGMxNTI5MGE0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJhcGlfa2V5IjoiNDdmMGQ2ODhhZDljMjNiNGM5M2M2MWRkNjYxNzMwNTA1ZTA5ODgxYTBjMTE3NTYzYTRiYTFmNWU4Y2IyZTEyOCJ9LCJuYmYiOjE3NDAyMzIwNzV9.5n9P7p43TKFBS7oEArceY_hW-QaZ98WW04lSMMAk9KU"
@@ -66,7 +67,7 @@ Max_Weight_FCL = 170000
 
 Google_Auth_Scopes = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
 Google_Client_Id:str = "216487988564-rstjpjae627f1i5qrg9ruf6vk1841u3p.apps.googleusercontent.com"
-Google_Client_Secret_Key:str = "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"
+Google_Client_Secret_Key:str =  Field(validation_alias="Google_Client_Secret_Key") 
 
 Ocr_DocumentProcess_Url = "https://docmanagement1-h7dgaretesewcggt.eastus-01.azurewebsites.net/api/v1/"
 Ocr_DocumentProcess_Key = "FEF85438-D360-4BC9-8265-7C0EC9F256C5"
