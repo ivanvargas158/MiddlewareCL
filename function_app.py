@@ -1,7 +1,13 @@
 import azure.functions as func
 import logging
-
+from routes.outlook_generate_oauth2_access_refresh_token import generate_oauth2_refresh_access_token
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+
+
+@app.route(route="http_trigger_outlook_refresh_access_token")
+def http_trigger_outlook_refresh_access_token(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function http_trigger_outlook_refresh_access_token')
+    return generate_oauth2_refresh_access_token(req)
 
 @app.route(route="http_trigger")
 def http_trigger(req: func.HttpRequest) -> func.HttpResponse:
