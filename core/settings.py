@@ -15,7 +15,7 @@ DB_pwd = "aV7Uccsj37TdmtA"
 
 
 Azure_Cliente_Id = "df6095a7-39cc-4b92-877d-60a6347a00f8"
-Azure_Cliente_Secret = "zKm8Q~T4fAjRDLlAlN854mrwklQ4nOoXb7CNdbr0"
+Azure_Cliente_Secret = Field(validation_alias="Azure_Cliente_Secret")
 
 Outlook_Personal_Refresh_Token_Scopes = ["offline_access", "Mail.ReadWrite", "Mail.Send", "Mail.Read", "User.read"]
 Outlook_Business_Refresh_Token_Scopes = "https://graph.microsoft.com/.default"
@@ -66,7 +66,7 @@ Max_Weight_FCL = 170000
 
 
 Google_Auth_Scopes = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
-Google_Client_Id:str = "216487988564-rstjpjae627f1i5qrg9ruf6vk1841u3p.apps.googleusercontent.com"
+Google_Client_Id:str = Field(validation_alias="Google_Client_Id")
 Google_Client_Secret_Key:str =  Field(validation_alias="Google_Client_Secret_Key") 
 
 Ocr_DocumentProcess_Url = "https://docmanagement1-h7dgaretesewcggt.eastus-01.azurewebsites.net/api/v1/"
