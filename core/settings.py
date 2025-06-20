@@ -34,27 +34,17 @@ Openai_Api_Key_Vision = Field(validation_alias="Openai_Api_Key_Vision")
 Gpt_Trainer_Beaer_Key = Field(validation_alias="Gpt_Trainer_Beaer_Key") 
 Gpt_UUID = "8aa67d30b71648a295407f00f916548d"
 
-Gpt_Trainer_Beaer_Key_Format_Error = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MDIzMjA3NSwianRpIjoiNzJlODkxNDQtY2Y2NS00NDRjLTgyZWEtNjU0MGMxNTI5MGE0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJhcGlfa2V5IjoiNDdmMGQ2ODhhZDljMjNiNGM5M2M2MWRkNjYxNzMwNTA1ZTA5ODgxYTBjMTE3NTYzYTRiYTFmNWU4Y2IyZTEyOCJ9LCJuYmYiOjE3NDAyMzIwNzV9.5n9P7p43TKFBS7oEArceY_hW-QaZ98WW04lSMMAk9KU"
-Gpt_UUID_Format_Error = "eff609c338d64904a780449a7b83fa82"
 
-Gpt_Trainer_Beaer_Key_Category_Classify = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MDMyODk1NSwianRpIjoiMWU5MmFkMzItZGQ3Yi00M2IzLThiOGMtNTczZDE1NDBmZmFkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJhcGlfa2V5IjoiYzc5OTIyMzAyNGZiMjNlNGI2NWQ4OTA1ZDFiNWU5YWI1NjVlMjMyODcwNjY3YTI1MTgwOTA4MGM0ZTk5ZmE5ZiJ9LCJuYmYiOjE3NDAzMjg5NTV9.ve9XUf-VfJhh63axB_3ay1mGytjR1h7C-RPc_4gRAM4"
+Gpt_Trainer_Beaer_Key_Category_Classify = Field(validation_alias="Gpt_Trainer_Beaer_Key_Category_Classify")
 Gpt_UUID_Category_Classify = "04ebc0b2909f489dbac31dccd74bc3e9"
-
-Gpt_Trainer_Beaer_Key_Combine = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MzAxMDM4NCwianRpIjoiNDc2YTU5ZmEtY2ZjYi00MjdmLTgzNWYtNzkwMmI1ODI3MDUwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJhcGlfa2V5IjoiMjAyOGU4OWNmY2NmMzE4NWM4YTFjZThlYjU2YWY0ZWRmNWJkMzhkNDY4MmYzYzZkOWI0YjM4YjY3N2RhYTJlYiJ9LCJuYmYiOjE3NDMwMTAzODR9.fVHV6xZtTh0LLoghnbpSO-LhJ7adB6eJS1hM-2SK2So"
-Gpt_UUID_Combine = "b345ade5bd4542a2adf3dd712a145560"
 
 Cargologik_Username = "amarom245@gmail.com"
 Cargologik_Password = "Freightsync1!"
-Cargologik_Refresh_Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiI2NmEyN2JlNzNhZGNkM2RhMTIzN2Y5MTMiLCJjb21wYW55IjoiNjZhMjdiZTczYWRjZDNkYTEyMzdmOTA3IiwidWlkIjoiNjZhMzA4NTY2OTdhM2FhY2NhNWU4YWYyIiwicm9sZSI6ImFkbWluIiwiZG9taW5pbyI6ImNhcmdvbG9naWsuYXBwIiwidXJsIjoiZnV6Z2x0ZXN0LmNhcmdvbG9naWsuYXBwIiwiY29tcGFueVR5cGUiOiJsc3AiLCJkaXJlY3RvcnlCdWNrZXQiOiJmdXpnbHRlc3QtY2FyZ29sb2dpay1hcHAiLCJjb21wYW55TmFtZSI6IkZVWiBHbG9iYWwgTG9naXN0aWNzIiwiaXNEZW1vIjp0cnVlLCJpYXQiOjE3MjQ2NTg1MTQsImV4cCI6MTcyNTI2MzMxNH0.lFQu4jVrB01rfdMKH0iuos25n5izu--BNJkrRou9svI"
 Cargologik_Url = "https://fuzgltest.cargologik.app/api/v2/"
 
 Google_Service_Account_File = f'{Path.cwd()}/shared/jsons/googlesheet_credentials.json'
 Google_Sheet_Scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
 
-Exfreight_Username = "mike@synapsevue.ai"
-Exfreight_Partner_Id= "2a7ef8a8-e4a3-4933-b3cb-4915e5b5f4b6"
-Exfreight_Token = "28bb8b5af18b0b99"
-Exfreight_Base_Url="https://exfreight.flipstone.com/"
 
 Azure_Middleware_InstrumentationKey = "39ebfea2-59f5-403d-a60a-7b0c4cb73d1a"
 Error_text_email = "Oops..looks like we need a little more info to move forward"
@@ -65,7 +55,7 @@ Filter_Spam_Emails = ':: System Warning :: Notification had no recipients'
 Max_Weight_FCL = 170000
 
 
-Google_Auth_Scopes = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
+Google_Auth_Scopes = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/gmail.labels']
 Google_Client_Id:str = Field(validation_alias="Google_Client_Id")
 Google_Client_Secret_Key:str =  Field(validation_alias="Google_Client_Secret_Key") 
 

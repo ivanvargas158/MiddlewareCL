@@ -1,0 +1,129 @@
+{
+  "title": "Shipment",
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "_id": { "type": "string","default": "66a27de1d37106eb5dc7520c" },
+        "name": { "type": "string" , "default": "Amano Pioneer Eclipse Corp"}
+      }
+    },
+    "freightType": { "type": "string" },
+    "shipmentType": { "type": "string" },
+    "referenceName": { "type": "string" },
+    "pickupAddress": { "type": "string" },
+    "deliveryAddress": { "type": "string" },
+    "incoterm": { "type": "string" },
+    "commodity": { "type": "string" },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "address": { "type": "string" },
+        "countryCode": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      },
+      "required": ["address", "countryCode"]
+    },
+    "destination": {
+      "type": "object",
+      "properties": {
+        "address": { "type": "string" },
+        "countryCode": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      },
+      "required": ["address", "countryCode"]
+    },
+    "mbl": { "type": "string" },
+    "bookingNumber": { "type": "string" },
+    "etd": { "type": "string", "format": "date" },
+    "eta": { "type": "string", "format": "date" },
+    "internalReference": { "type": "string" },
+    "notes": { "type": "string" },
+    "trade": { "type": "string" },
+    "packagesInfo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "packageType": { "type": "string" },
+          "amount": { "type": "number" },
+          "weight": { "type": "string" },
+          "weightMetric": { "type": "string" },
+          "hazardousMaterials": { "type": "string" },
+          "volume": { "type": "string" },
+          "volumeMetric": { "type": "string" }
+        },
+        "required": ["packageType", "amount"]
+      }
+    },
+    "totalVolume": { "type": "number" },
+    "totalWeight": { "type": "number" },
+    "totalChargeableWeight": { "type": "number" },
+    "totalVolumetricWeight": { "type": "number" },
+    "paymentTerms": { "type": "string" },
+    "planVisibility": {
+      "type": "object",
+      "properties": {
+        "_id": { "type": "string" }
+      }
+    },
+    "carrier": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "scac": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "shipper": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" }
+      },
+      "required": ["name", "address", "email"]
+    },
+    "consignee": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["name", "address", "email"]
+    },
+    "configTracking": { "type": "string" },
+    "manualInput": { "type": "boolean" },
+    "pickupDate": { "type": "string", "format": "date" },
+    "arrivalDate": { "type": "string", "format": "date" },
+    "actualDeparture": { "type": "string", "format": "date" },
+    "actualArrival": { "type": "string", "format": "date" },
+    "cutoff": { "type": "string", "format": "date" },
+    "flightNumber": { "type": "string" },
+    "mawb": { "type": "string" },
+    "hawb": { "type": "string" },
+    "vesselNumber": { "type": "string" },
+    "voyageNumber": { "type": "string" },
+    "hbl": { "type": "string" },
+    "scacCode": { "type": "string" }
+  },
+  "required": [
+    "company",
+    "freightType",
+    "referenceName",
+    "shipper",
+    "consignee",
+    "mbl",
+    "configTracking",
+    "origin",
+    "destination",
+    "bookingNumber"
+  ]
+}

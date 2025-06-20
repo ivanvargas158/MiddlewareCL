@@ -1,0 +1,86 @@
+{
+  "title": "Shipment",
+  "type": "object",
+  "required": ["_id", "referenceName"],
+  "properties": {
+    "_id": {
+      "type": "string"
+    },
+    "referenceName": {
+      "type": "string"
+    },
+    "internalReference": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "eta": {
+      "type": "string",
+      "format": "date"
+    },
+    "etd": {
+      "type": "string",
+      "format": "date"
+    },
+    "pickupDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "deliveryAddress": {
+      "type": "string"
+    },
+    "packagesInfo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "packageType": { "type": "string" },
+          "amount": { "type": "integer" },
+          "weight": { "type": "string" },
+          "weightMetric": { "type": "string" },
+          "volume": { "type": "string" },
+          "volumeMetric": { "type": "string" }
+        }
+      }
+    },
+    "totalWeight": {
+      "type": "number"
+    },
+    "totalVolume": {
+      "type": "number"
+    },
+    "paymentTerms": {
+      "type": "string"
+    },
+    "configTracking": {
+      "type": "string"
+    },
+    "carrier": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "scac": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "shipper": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string" }
+      }
+    },
+    "consignee": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string" }
+      }
+    }
+  }
+}
