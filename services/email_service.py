@@ -11,7 +11,7 @@ from services.postgresql_db import update_last_human_email_category_content
 from datetime import datetime, timezone, timedelta 
 from services.gmail_service import *
 from utils.global_resources import generate_greetings
-
+from services.jobs.background_job_service import upload_files
 def ensure_valid_token(email_address: str) -> tuple[str, str,str, str,str,str]:
     try:     
         with psycopg2.connect(host=DB_Host, dbname=DB_Name, user=DB_User, password=DB_pwd) as conn:
@@ -63,6 +63,7 @@ def ensure_valid_token(email_address: str) -> tuple[str, str,str, str,str,str]:
                 #         folder_internal_email_id = outlook_create_folder(access_token,email_address,Outlook_Folder_to_Move_Internal_Emails)
                 #     else:
                 #         update_folder_id(folder_internal_email_id,email_address,Outlook_Folder_to_Move_Internal_Emails)
+                upload_files(1,2)
                 return access_token, refresh_token,folder_id,folder_spam_id,folder_internal_email_id,email_type
     except Exception as e:
         raise Exception(f"Error ensuring valid token: {str(e)}")
