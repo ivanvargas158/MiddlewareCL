@@ -64,10 +64,10 @@ def  call_ocr(file_name:str,mime_type:str,file:io.BytesIO,country_id:int)-> Dict
         else:            
             raise Exception(f"HTTP {response.status_code} error in call_ocr: {response.text}")
     except requests.RequestException as e:
-        raise Exception(f"Request error while call_ocr: {e}")
+        raise Exception(f"Request error while call_ocr: {e.args}")
 
     except Exception as e:
-        raise Exception(f"Unexpected error while call_ocr: {e}")
+        raise Exception(f"Unexpected error while call_ocr: {e.args}")
     
 
 def  list_document_by_country(country_id:int) -> list[tuple[str, str, str, bool]]:
