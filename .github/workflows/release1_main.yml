@@ -3,7 +3,7 @@ name: Deploy Python Azure Function to Linux
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -37,6 +37,6 @@ jobs:
       - name: Deploy via zip
         run: |
           az functionapp deployment source config-zip \
-            --name FuncAgentMiddleware-dev-v2 \
+            --name test001 \
             --resource-group DefaultResourceGroup-EUS \
             --src functionapp.zip
