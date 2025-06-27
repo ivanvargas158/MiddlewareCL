@@ -37,7 +37,7 @@ def ensure_valid_token(email_address: str) -> tuple[str, str,str, str,str,str]:
                     token_expires = datetime.fromisoformat(token_expires)
                 
                 # Check if the token is about to expire in less than 10 minutes
-                if token_expires - timedelta(minutes=10) < datetime.now(tz=timezone.utc):
+                if not is_token_valid(token_expires):
                     new_access_token, new_refresh_token = '',''
                     new_access_token, new_refresh_token  = generate_gmail_access_refresh_token(refresh_token,email_address)
                     #new_access_token, new_refresh_token = generate_outlook_access_refresh_token(refresh_token, email_address)
@@ -71,6 +71,16 @@ def ensure_valid_token(email_address: str) -> tuple[str, str,str, str,str,str]:
 
 
 
+
+def is_token_valid(token_expires: datetime) -> bool:
+    # Subtract 15 minutes from the token expiration
+    adjusted_expiration_time = token_expires - timedelta(minutes=10)
+
+    # Get the current UTC time
+    current_time = datetime.now(timezone.utc)
+
+    # Return True if adjusted expiration is still in the future
+    return adjusted_expiration_time > current_time
 
 def email_category_classification(email_content: str, email_attachment: str, message_id: str):
    

@@ -95,13 +95,14 @@ def  call_ocr(file_name:str,mime_type:str,file:io.BytesIO,country_id:int)-> Dict
     url = f"{Ocr_DocumentProcess_Url}ocr/upload?countryId={country_id}"
     headers = {
         'x-api-key': Ocr_DocumentProcess_Key
-        }             
-    response = requests.post(url, headers=headers, files=new_file,timeout=120)         
-    if response.status_code == 200: 
-        return json.loads(response.content.decode("utf-8")) 
-    else:            
-        raise ValidationError(f"HTTP {response.status_code} error in call_ocr: {response.text}")
-
+        } 
+    try:
+        response = requests.post(url, headers=headers, files=new_file, timeout=120)
+        response.raise_for_status()  # raises HTTPError for 4xx/5xx
+        response.encoding = "utf-8"
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise ValidationError(f"Request failed: {e}\nStatus: {getattr(response, 'status_code', 'No status')}\nContent: {getattr(response, 'text', 'No text')}")
 
 def  list_document_by_country(country_id:int) -> list[tuple[str, str, str, bool]]:
     try: 
