@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from pydantic import field_validator,fields,Field
 
@@ -23,24 +24,21 @@ Outlook_Folder_to_Move_Email = "Processed SV"
 Outlook_Folder_to_Move_Spam_Email = "AI Spam Filter"
 Outlook_Folder_to_Move_Internal_Emails = "Internal Emails"
 
+Outlook_Folder_to_Move_Email_CL = "Processed CL"
+Outlook_Folder_to_Move_Email_Unprocessed_CL = "Unprocessed CL"
+
 Agent_Emails = {}
 
-Openai_Api_Key =  Field(validation_alias="Openai_Api_Key") 
+Openai_Api_Key =  os.getenv("Openai_Api_Key") 
 Openai_Base_Url = "https://api.openai.com/v1"
 Openai_Base_Model = "gpt-4.1-mini"
-
-Openai_Api_Key_Vision = Field(validation_alias="Openai_Api_Key_Vision") 
-
-Gpt_Trainer_Beaer_Key = Field(validation_alias="Gpt_Trainer_Beaer_Key") 
-Gpt_UUID = "8aa67d30b71648a295407f00f916548d"
-
 
 Gpt_Trainer_Beaer_Key_Category_Classify = Field(validation_alias="Gpt_Trainer_Beaer_Key_Category_Classify")
 Gpt_UUID_Category_Classify = "04ebc0b2909f489dbac31dccd74bc3e9"
 
-Cargologik_Username = "amarom245@gmail.com"
-Cargologik_Password = "Freightsync1!"
-Cargologik_Url = "https://fuzgltest.cargologik.app/api/v2/"
+Cargologik_Username = "michael+amc@cargologik.com"
+Cargologik_Password = "Cargologiktest999"
+Cargologik_Url = "https://acmemanucompany.cargologik.app/api/v2/"
 
 Google_Service_Account_File = f'{Path.cwd()}/shared/jsons/googlesheet_credentials.json'
 Google_Sheet_Scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
@@ -56,8 +54,19 @@ Max_Weight_FCL = 170000
 
 
 Google_Auth_Scopes = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/gmail.labels']
-Google_Client_Id:str = Field(validation_alias="Google_Client_Id")
-Google_Client_Secret_Key:str =  Field(validation_alias="Google_Client_Secret_Key") 
+Google_Client_Id = os.getenv("Google_Client_Id")
+Google_Client_Secret_Key = os.getenv("Google_Client_Secret_Key") 
 
 Ocr_DocumentProcess_Url = "https://docmanagement1-h7dgaretesewcggt.eastus-01.azurewebsites.net/api/v1/"
 Ocr_DocumentProcess_Key = "FEF85438-D360-4BC9-8265-7C0EC9F256C5"
+
+Redis_Host = "RedisJobs.redis.cache.windows.net"
+Redis_Port = 6380
+Redis_Key = os.getenv("Redis_Key") 
+
+Openai_Api_Key_azure_embedded = os.getenv("Openai_Api_Key_azure_embedded") 
+Openai_url_azure_embedded = "https://jsonembedding.openai.azure.com/openai/deployments/text-embedding-3-small/embeddings?api-version=2023-05-15"
+
+Azure_Search_Index_Key = os.getenv("Azure_Search_Index_Key") 
+Azure_Search_Index_Url = "https://aisearchshipmentcl.search.windows.net/indexes/brasil-documents-index/docs/index?api-version=2024-03-01-Preview"
+Azure_Search_Index_version = "2024-03-01-Preview"

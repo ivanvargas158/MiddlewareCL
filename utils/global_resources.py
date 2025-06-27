@@ -1,10 +1,12 @@
 import logging
+import re
 from zoneinfo import ZoneInfo
 from datetime import datetime
 from azure.monitor.opentelemetry import configure_azure_monitor
 from core.settings import Azure_Middleware_InstrumentationKey
 from opentelemetry import trace
 from datetime import datetime, timezone, timedelta
+
 
 class global_azure_monitor:
     def __init__(self):
@@ -127,3 +129,16 @@ def remove_empty_fields(data):
 
     else:
         return data
+
+
+def is_valid_shipping_mark(subject: str) -> bool:
+    pattern = r"SO/\d{4}-\d{1,2}[A-Z]?"
+    return re.search(pattern, subject) is not None
+
+def extract_shipping_mark(subject: str) -> str:
+    pattern = r"SO/\d{4}-\d{1,2}[A-Z]?"
+    match = re.search(pattern, subject)
+    if match:
+        return match.group(0)
+    else:
+        return ""

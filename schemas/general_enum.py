@@ -8,6 +8,7 @@ class EmailType(str, Enum):
 class APIAction(str, Enum):
     create_shipment = "create_shipment"
     update_shipment = "update_shipment"
+    brasil_master = "brasil_master"
 
 class DocumentType(str, Enum):
     air_waybill = "air_waybill"

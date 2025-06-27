@@ -1,11 +1,7 @@
 import re
-import base64
-import io
-import requests
 import html
-import logging
 from bs4 import BeautifulSoup
-from core.settings import Openai_Api_Key_Vision,Openai_Base_Model,Error_text_email
+from core.settings import Error_text_email
 
 def filter_emails_from_agents(data, agent_emails):
     filtered_emails = [

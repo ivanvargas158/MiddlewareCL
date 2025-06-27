@@ -5,8 +5,8 @@
     "company": {
       "type": "object",
       "properties": {
-        "_id": { "type": "string","default": "66a27de1d37106eb5dc7520c" },
-        "name": { "type": "string" , "default": "Amano Pioneer Eclipse Corp"}
+        "_id": { "type": "string" },
+        "name": { "type": "string" }
       }
     },
     "freightType": { "type": "string" },

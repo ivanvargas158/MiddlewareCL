@@ -4,6 +4,7 @@ from pathlib import Path
 schema_files = {
     APIAction.create_shipment: "create_shipment.json",
     APIAction.update_shipment: "update_shipment.json",
+    APIAction.brasil_master: "brasil_master.json",
 }
 
 # Load all schemas into a dictionary at startup

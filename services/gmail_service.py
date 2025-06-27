@@ -4,13 +4,14 @@ import base64
 import logging
 from datetime import datetime, timezone, timedelta
 from core.settings import *
-from utils.global_resources import get_expire_date
+from utils.global_resources import get_expire_date,is_valid_shipping_mark,extract_shipping_mark
 from services.postgresql_db import update_folder_id,get_last_conversation
 from utils.email_utils import add_final_text
 from email.mime.text import MIMEText
 
-def fetch_gmail_new_emails(email_address: str, access_token: str, folder_spam_id:str, folder_internal_email_id:str,fetch_limit: int = 1) -> list:
-    
+def fetch_gmail_new_emails(access_token: str,folder_internal_email_id:str,fetch_limit: int = 1) -> list:
+    #folder_internal_email_id = UnprocessedCL
+    #folder_internal_email_id = UnprocessedCL
     if not access_token:
         logging.error('Access token is not valid')
         return []
@@ -53,11 +54,11 @@ def fetch_gmail_new_emails(email_address: str, access_token: str, folder_spam_id
                 #message_id = email.get('id') #actual email received
                 #conversation_Id = email.get('conversationId') #actual conversation
                 email_from = sender
-                if subject in Filter_Spam_Emails:
-                    test = "1"
+                if not is_valid_shipping_mark(subject):
                     #gmail_create_label(access_token,HumanMessageCategory.SPAM.value,message_id)        
-                    #gmail_move_email(access_token,message_id,'',HumanMessageCategory.SPAM.value)
+                    gmail_move_email(access_token,message_id,folder_internal_email_id)
                 else:
+                    shipping_mark:str = extract_shipping_mark(subject)
                     list_thread_emails = fetch_thread_emails_gmail(thread_id=thread_Id, access_token=access_token)
                     full_conversation = []
                     last_conversation_datetime_str = get_last_conversation(thread_Id)
@@ -103,7 +104,7 @@ def fetch_gmail_new_emails(email_address: str, access_token: str, folder_spam_id
                             "message_id": message_id,
                             "thread_Id": thread_Id,
                             "body": full_conversation_text,
-                            "subject":subject,
+                            "shipping_mark":shipping_mark,
                             "list_attachmentId":list_attachmentId
                         }
                         parse_emails.append(parse_email)

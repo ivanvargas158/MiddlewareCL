@@ -19,7 +19,7 @@ def fetch_emails(req: func.HttpRequest) -> func.HttpResponse:
         if email_type == EmailType.microsoft:
             emails = fetch_outlook_new_emails(email_address,access_token,folder_spam_id,folder_internal_email_id,fetch_limit=10)
         else:
-            emails = fetch_gmail_new_emails(email_address,access_token,folder_spam_id,folder_internal_email_id,fetch_limit=1)
+            emails = fetch_gmail_new_emails(access_token,folder_internal_email_id,fetch_limit=1)
         
         return func.HttpResponse(
             json.dumps({"emails": emails, "email_count": len(emails)}),

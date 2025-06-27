@@ -1,13 +1,12 @@
 import json
 import logging
 import azure.functions as func
-#from customer_services.request.quote_request import handle_quote_request
 from services.postgresql_db import save_email_exception
 from services.outlook_service import outlook_mark_email_as_read,outlook_mark_red_flag,create_outlook_label
 from schemas.email_category_classification_enum import HumanMessageCategory
 from utils.global_resources import create_record_azure_insight
 from services.doc_process_service import ocr_process_document
-from core.custom_exceptions import ValidationError
+from core.custom_exceptions import ValidationError 
 
 def ocr_process_document_request(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function to Quote') 
@@ -18,7 +17,9 @@ def ocr_process_document_request(req: func.HttpRequest) -> func.HttpResponse:
         list_attachmentId = req_body.get('list_attachmentId')
         access_token = req_body.get("access_token") 
         run_id = req_body.get("run_id")
-        new_shipment_reponse:str = ocr_process_document(message_id,thread_Id,list_attachmentId,access_token)
+        email_type = req_body.get("email_type")
+        shipping_mark = req_body.get("shipping_mark")
+        new_shipment_reponse:str = ocr_process_document(message_id,thread_Id,list_attachmentId,access_token,email_type,shipping_mark)
         return func.HttpResponse(
             json.dumps({""
                      "response": new_shipment_reponse

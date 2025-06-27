@@ -1,8 +1,13 @@
 
 import requests
 import json
-from core.settings import Openai_Base_Model,Openai_Base_Url
-
+import os
+import contextlib
+from openai import AzureOpenAI,OpenAI
+from core.settings import Openai_Base_Model,Openai_Base_Url,Openai_Api_Key_azure_embedded,Openai_url_azure_embedded,Azure_Search_Index_Key,Azure_Search_Index_Url,Azure_Search_Index_version,Openai_Api_Key,Openai_Base_Model
+from schemas.general_enum import APIAction
+from core.load_json import get_json_schema
+from core.custom_exceptions import ValidationError 
 def call_openai(Openai_Api_Key:str,payload):
     headers = {
         "Content-Type": "application/json",
@@ -114,3 +119,152 @@ def build_gpt_payload_shipment_cl(input_json, json_shipment_cl):
         ],
         "temperature": 0, 
     }
+
+
+
+@contextlib.contextmanager
+def azure_openai_context():
+    
+    client = AzureOpenAI(
+            api_key=Openai_Api_Key_azure_embedded,
+            api_version="2024-12-01-preview",
+            azure_endpoint=Openai_url_azure_embedded
+    )
+
+    yield client
+
+    client.close
+
+@contextlib.contextmanager
+def openai_client():
+    
+    client = OpenAI(
+        api_key = Openai_Api_Key,
+    )
+
+    yield client
+
+    client.close
+
+
+
+def embed_text(text:str):
+    with azure_openai_context() as openai_connection:
+        result = openai_connection.embeddings.create(
+            input=text,
+            model="text-embedding-3-small", 
+            encoding_format="float"
+        )
+        return result.data[0].embedding
+    
+def push_documents_to_index_azure(document: dict):
+
+    payload = {
+    "value": [{"@search.action": "upload", **document}]
+    }
+
+    url = Azure_Search_Index_Url
+    headers = {
+        "Content-Type": "application/json",
+        "api-key": Azure_Search_Index_Key
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code != 200:
+        raise ValidationError(f'Unable to updated documents to Azure Index, {str(response.content)}')
+        
+
+def generate_payload_update_shipment(schema_result_azure_search)->dict:
+    update_shipment_schema:str = get_json_schema(APIAction.update_shipment)
+       
+    try:  
+
+        shipment_mapper_prompt = """
+            You are “ShipmentMapper”, a precise JSON-transformation assistant.
+
+            **Job**
+
+            1. Input #1 ('azureSearchDocs`) is an array containing one or more documents returned by Azure AI Search.  
+            2. Input #2 (`updateShipmentSchema`) is the JSON-Schema that the destination objects MUST validate against.  
+            3. Create **one** `UpdateShipment` object for every unique `shipment_id` found in `azureSearchDocs`.  
+            • Group all Azure docs that share the same `shipment_id`.  
+            • If a field is duplicated across group members, prefer the one whose Azure document has the highest `@search.score`.  
+            4. Return **ONLY** a JSON,  whose items conform 100 % to `updateShipmentSchema`.  
+            • Do **NOT** wrap the output in Markdown or any extra keys.  
+            • If a value is unknown or missing, omit that property entirely (do **not** output `null`).  
+            • Strings must be trimmed; numbers and dates normalised as shown below.  
+
+            azureSearchDocs
+
+            {azureSearchDocs_schema}    
+
+            updateShipmentSchema
+
+            {updateShipmentSchema_schema}    
+            
+            **Field-mapping rules**
+
+            | UpdateShipment field | Azure field(s) & transformation rules |
+            |----------------------|----------------------------------------|
+            | `_id`                | don't update it |
+            | `referenceName`      | `shipment_id` |
+            | `internalReference`  | `brasil_master_bill_of_lading_booking_ref` or fallback to `brasil_master_bill_of_lading_bill_of_lading_no` |
+            | `notes`              | Concatenate (with “ | ”) any of:
+            • `brasil_master_bill_of_lading_description_of_packages_and_goods`
+            • `brasil_certificate_of_origin_goods_description` |
+            | `eta`                | If a doc contains `brasil_certificate_of_origin_destination` AND a valid arrival date (ISO or “dd-MMM-yyyy”), convert to `YYYY-MM-DD`. Otherwise omit. |
+            | `etd`                | Parse `brasil_master_bill_of_lading_shipped_on_board_date` → `YYYY-MM-DD`. |
+            | `deliveryAddress`    | `brasil_master_bill_of_lading_place_of_delivery` |
+            | `packagesInfo[]`     | For each container listed in:
+                - `brasil_master_bill_of_lading_container_cargo_table` OR  
+                - `brasil_certificate_of_origin_container_details`:  
+                - `packageType`: `"CT"` unless a more specific term appears before the first “-”  
+                - `amount`: integer carton count  
+                - `weight`: numeric (strip "kgs", "KGS", and thousands separators)  
+                - `weightMetric`: `"kg"`  
+                - `volume`: numeric (strip "cu. m.")  
+                - `volumeMetric`: `"m3"` |
+            | `totalWeight`        | Convert `brasil_master_bill_of_lading_total_gross_weight` to number (kg). |
+            | `totalVolume`        | Convert `brasil_master_bill_of_lading_measurement` to number (m³). |
+            | `paymentTerms`       | `brasil_commercial_invoice_payment_terms` |
+            | `carrier.name`       | Prefer `brasil_master_bill_of_lading_agent`; else use `brasil_master_bill_of_lading_vessel_and_voyage_no` |
+            | `carrier.scac[]`     | If a SCAC code (4 letters) appears anywhere in `brasil_master_bill_of_lading_agent`, extract and output as one-element array |
+            | `shipper.name`       | `brasil_master_bill_of_lading_shipper` |
+            | `shipper.address`    | If `brasil_packing_list_importer_details` contains “FORT” and looks like an address, use it. Else omit. |
+            | `consignee.name`     | `brasil_master_bill_of_lading_consignee` fallback `brasil_certificate_of_origin_importer` |
+            | `consignee.address`  | From `brasil_packing_list_importer_details` if it matches consignee name |
+
+            **Data-normalisation helpers**
+
+            * Remove thousands separators but keep decimals (`27,671.930 KGS` → `27671.93`)
+            * Kg↔tonnes conversions are NOT required—keep kilograms
+            * Dates: accept “20-Apr-2025” or ISO strings; always emit `YYYY-MM-DD`
+            * Ignore commas inside numeric strings when parsing
+            * Titles in names (Mr., Inc., S.A.) should remain as given
+            """
+
+
+        openai_prompt = shipment_mapper_prompt.format(azureSearchDocs_schema=schema_result_azure_search, updateShipmentSchema_schema=update_shipment_schema)
+
+        with openai_client() as client:
+            response = client.chat.completions.create(
+                model =Openai_Base_Model,
+                messages = [
+                    {"role": "user", "content": openai_prompt},
+                ],
+                temperature = 0.0,
+                response_format={ "type": "json_object" }
+
+            ) 
+
+        content = response.choices[0].message.content
+
+        response_data = json.loads(str(content))        
+
+        return response_data
+
+    except json.JSONDecodeError as e:
+        raise ValidationError(errors=f"Error: Failed to parse JSON from LLM response for memory extraction(generate_payload_update_shipment): {e}")
+    except Exception as e:
+        raise ValidationError(errors=f"Error during memory extraction(generate_payload_update_shipment): {e}")
+    

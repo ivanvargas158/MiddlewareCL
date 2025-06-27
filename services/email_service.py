@@ -7,11 +7,12 @@ from services.chat_gpt_service import create_request
 from typing import List
 from schemas.email_category_classification_enum import HumanMessageCategory
 from schemas.general_enum import APICargologik_html
+from schemas.general_dto import ProcessedDoc
+from schemas.general_dto import CreateDocumentDto
 from services.postgresql_db import update_last_human_email_category_content
 from datetime import datetime, timezone, timedelta 
 from services.gmail_service import *
 from utils.global_resources import generate_greetings
-from services.jobs.background_job_service import upload_files
 def ensure_valid_token(email_address: str) -> tuple[str, str,str, str,str,str]:
     try:     
         with psycopg2.connect(host=DB_Host, dbname=DB_Name, user=DB_User, password=DB_pwd) as conn:
@@ -44,26 +45,26 @@ def ensure_valid_token(email_address: str) -> tuple[str, str,str, str,str,str]:
                     refresh_token = new_refresh_token 
 
                 if folder_id is None:
-                    folder_id = gmail_check_if_label_exists(access_token,Outlook_Folder_to_Move_Email)
+                    folder_id = gmail_check_if_label_exists(access_token,Outlook_Folder_to_Move_Email_CL)
                     if(not folder_id or folder_id==''):
-                        folder_id = gmail_create_label(access_token,email_address,Outlook_Folder_to_Move_Email)
+                        folder_id = gmail_create_label(access_token,email_address,Outlook_Folder_to_Move_Email_CL)
                     else:
-                        update_folder_id(folder_id,email_address,Outlook_Folder_to_Move_Email)
+                        update_folder_id(folder_id,email_address,Outlook_Folder_to_Move_Email_CL)
                 
-                if folder_spam_id is None:
-                    folder_spam_id = gmail_check_if_label_exists(access_token,Outlook_Folder_to_Move_Spam_Email)
-                    if(not folder_spam_id or folder_spam_id==''):
-                        folder_spam_id = gmail_create_label(access_token,email_address,Outlook_Folder_to_Move_Spam_Email)
-                    else:
-                        update_folder_id(folder_spam_id,email_address,Outlook_Folder_to_Move_Spam_Email)
-
-                # if folder_internal_email_id is None:
-                #     folder_internal_email_id = outlook_check_if_exists_processedfolder(access_token,Outlook_Folder_to_Move_Internal_Emails)
-                #     if(not folder_internal_email_id or folder_internal_email_id==''):
-                #         folder_internal_email_id = outlook_create_folder(access_token,email_address,Outlook_Folder_to_Move_Internal_Emails)
+                # if folder_spam_id is None:
+                #     folder_spam_id = gmail_check_if_label_exists(access_token,Outlook_Folder_to_Move_Spam_Email)
+                #     if(not folder_spam_id or folder_spam_id==''):
+                #         folder_spam_id = gmail_create_label(access_token,email_address,Outlook_Folder_to_Move_Spam_Email)
                 #     else:
-                #         update_folder_id(folder_internal_email_id,email_address,Outlook_Folder_to_Move_Internal_Emails)
-                upload_files(1,2)
+                #         update_folder_id(folder_spam_id,email_address,Outlook_Folder_to_Move_Spam_Email)
+
+                if folder_internal_email_id is None:
+                    folder_internal_email_id = gmail_check_if_label_exists(access_token,Outlook_Folder_to_Move_Email_Unprocessed_CL)
+                    if(not folder_internal_email_id or folder_internal_email_id==''):
+                        folder_internal_email_id = gmail_create_label(access_token,email_address,Outlook_Folder_to_Move_Email_Unprocessed_CL)
+                    else:
+                        update_folder_id(folder_id,email_address,Outlook_Folder_to_Move_Email_Unprocessed_CL)
+ 
                 return access_token, refresh_token,folder_id,folder_spam_id,folder_internal_email_id,email_type
     except Exception as e:
         raise Exception(f"Error ensuring valid token: {str(e)}")
@@ -104,10 +105,12 @@ def extract_categories(content: str) -> List[str]:
 
 
 
-def create_new_shipment_reponse(content_response:dict,html_body_response_documents:str)->str:
+def create_new_shipment_reponse(content_response:dict)->CreateDocumentDto:
 
     data = content_response.get("data", {})
-    shipment_id = data.get("shipmentId", "Shipment Details")
+    shipment_id = data.get("shipmentId", "")
+    shipment_id_uuid4 = data.get("_id", "")
+    result: Tuple[str,str]
 
     def render_value(value: Any) -> str:
         if isinstance(value, dict):
@@ -127,8 +130,6 @@ def create_new_shipment_reponse(content_response:dict,html_body_response_documen
 
     html_body_create_shipment:str = f"""<div class="title">Shipment ID: {shipment_id}</div><table><tr><th>Field</th><th>Value</th></tr>"""
 
-
-
     for key, value in content_response.items():
         if key in ["status", "_id"] or is_uuid_like(value):
             continue
@@ -140,28 +141,25 @@ def create_new_shipment_reponse(content_response:dict,html_body_response_documen
             html_body_create_shipment += f"<tr><td class='label'>{pretty_key}</td><td>{rendered_value}</td></tr>"
     html_body_create_shipment += """</table>"""    
 
-    html_body_create_shipment += html_body_response_documents
-
     greeting = generate_greetings()
 
     template_new_shipment = get_html(APICargologik_html.create_shipment)
     
     html =  template_new_shipment.replace("{greetting}",greeting)
     html = html.replace("{data_shipment}",html_body_create_shipment)
-    return html
+    return CreateDocumentDto(html,shipment_id,shipment_id_uuid4)
 
 def is_uuid_like(value: Any) -> bool:   
     return isinstance(value, str) and re.fullmatch(r"[a-f\d]{24}", value) is not None
 
 
-def create_reponse_missing_documents(count_docs:int)->str:
-    return f"Dear user, there must be at least {count_docs} attached documents to continue the process."
+def create_reponse_missing_documents(count_docs:int,shipping_mark:str)->str:
 
-
-
-
-def create_complete_reponse_documents(body_html_response:str)->str:
-
+    message:str = f"To proceed with the process, you must attach at least {count_docs} documents.</br>The registered shipping mark is {shipping_mark}. Please verify that the attached documents match this shipping mark."
+    response:CreateDocumentDto = create_complete_reponse_documents(message)
+    return response.html
+    
+def create_complete_reponse_documents(body_html_response:str)->CreateDocumentDto:
     
     greeting = generate_greetings()
 
@@ -171,30 +169,29 @@ def create_complete_reponse_documents(body_html_response:str)->str:
 
     html_content =  html_content.replace("{data_shipment}",body_html_response)
 
-    return html_content
+    return CreateDocumentDto(html_content,"")
 
 def create_body_html_reponse_documents(
-    response: List[Tuple[str, str, str]],
-    missing_doc_types: List[Tuple[str, str]] = []
+    list_docs: List[ProcessedDoc],
+    missing_doc_types: List[str] = [],shipment_id:str=""
 ) -> str:
     table_rows = ""
 
 
-    for doc_type, doc_type_code, file_name in response:
-            is_missing = doc_type in missing_doc_types
-            row_style:str = ' style="background-color: #FFD6D6;"' if is_missing else ""
-            processed_info:str = "unprocessed" if row_style else "processed"
+    for item in list_docs:
+            is_missing = item.doc_type_code in missing_doc_types
+            row_style:str = ' style="background-color: #FFD6D6;"' if is_missing else ""            
             table_rows += f"""
             <tr{row_style}>
-                <td>{doc_type}</td>
-                <td>{file_name}</td>
-                <td>{processed_info}</td>
+                <td>{item.doc_type}</td>
+                <td>{item.file_name}</td>
+                <td>{item.message}</td>
             </tr>
             """
  
 
     html_body_documents:str = f"""
-       <div class="title">Document List Status</div>
+       <div class="title">Shipment ID: {shipment_id}   - Document List Status </div>
             <table>
                 <thead>
                     <tr>
@@ -213,5 +210,81 @@ def create_body_html_reponse_documents(
     return html_body_documents
 
  
+def generate_update_shipment_html(shipment: dict,shipment_id:str) -> str:
+    def is_valid(value):
+        return value not in (None, "", [], {})
 
+    def render_row(label, value):
+        return f"<tr><td class='label'>{label}</td><td>{value}</td></tr>"
 
+    html = f"""    
+        <div class="title">Update Shipment Info {shipment_id}</div>
+    """
+
+    # Flat fields
+    general_fields = [
+        ("_id", shipment.get("_id")),
+        ("Reference Name", shipment.get("referenceName")),
+        ("Internal Reference", shipment.get("internalReference")),
+        ("Notes", shipment.get("notes")),
+        ("ETA", shipment.get("eta")),
+        ("ETD", shipment.get("etd")),
+        ("Pickup Date", shipment.get("pickupDate")),
+        ("Delivery Address", shipment.get("deliveryAddress")),
+        ("Payment Terms", shipment.get("paymentTerms")),
+        ("Config Tracking", shipment.get("configTracking")),
+        ("Total Weight", shipment.get("totalWeight")),
+        ("Total Volume", shipment.get("totalVolume")),
+    ]
+    rows = [render_row(label, value) for label, value in general_fields if is_valid(value)]
+    if rows:
+        html += "<table><tr><th colspan='2'>General Information</th></tr>" + "".join(rows) + "</table>"
+
+    # packagesInfo
+    packages = shipment.get("packagesInfo") or []
+    if is_valid(packages):
+        html += "<table><tr><th colspan='2'>Packages Info</th></tr>"
+        for i, p in enumerate(packages):
+            html += f"<tr><td class='label'>Package #{i+1}</td><td><ul>"
+            for key, val in p.items():
+                if is_valid(val):
+                    html += f"<li><strong>{key}</strong>: {val}</li>"
+            html += "</ul></td></tr>"
+        html += "</table>"
+
+    # Carrier
+    carrier = shipment.get("carrier")
+    if isinstance(carrier, dict):
+        if is_valid(carrier):
+            rows = []
+            if is_valid(carrier.get("name")):
+                rows.append(render_row("Name", carrier["name"]))
+            if is_valid(carrier.get("scac")):
+                rows.append(render_row("SCAC", ", ".join(carrier["scac"])))
+            if rows:
+                html += "<table><tr><th colspan='2'>Carrier</th></tr>" + "".join(rows) + "</table>"
+
+    # Shipper
+    shipper = shipment.get("shipper")
+    if isinstance(shipper, dict):
+        if is_valid(shipper):
+            rows = []
+            for label in ["name", "email", "address"]:
+                if is_valid(shipper.get(label)):
+                    rows.append(render_row(label.capitalize(), shipper[label]))
+            if rows:
+                html += "<table><tr><th colspan='2'>Shipper</th></tr>" + "".join(rows) + "</table>"
+
+    # Consignee
+    consignee = shipment.get("consignee")
+    if isinstance(consignee, dict):
+        if is_valid(consignee):
+            rows = []
+            for label in ["name", "email", "address"]:
+                if is_valid(consignee.get(label)):
+                    rows.append(render_row(label.capitalize(), consignee[label]))
+            if rows:
+                html += "<table><tr><th colspan='2'>Consignee</th></tr>" + "".join(rows) + "</table>"
+
+    html += "</body></html>"
+    return html
