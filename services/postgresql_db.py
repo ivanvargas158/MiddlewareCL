@@ -2,7 +2,7 @@ import psycopg2
 import logging
 import functools
 import re
-from core.settings import DB_User, DB_pwd, DB_Host, DB_Name,Outlook_Folder_to_Move_Spam_Email,Outlook_Folder_to_Move_Internal_Emails
+from core.settings import DB_User, DB_pwd, DB_Host, DB_Name,Outlook_Folder_to_Move_Spam_Email,Outlook_Folder_to_Move_Internal_Emails,Outlook_Folder_to_Move_Email_Unprocessed_CL
 from typing import Tuple
 from utils.global_resources import get_currentdate
 special_chars = r"[\"',;:!@#$%^&*()<>?/\\|{}[\]~`]"  # Define characters to replace
@@ -56,7 +56,7 @@ def update_folder_id(folder_id:str,email_address:str,folder:str):
     field_name = 'folder_id'
     if folder == Outlook_Folder_to_Move_Spam_Email:
         field_name = 'folder_spam_id'
-    if folder == Outlook_Folder_to_Move_Internal_Emails:
+    if folder == Outlook_Folder_to_Move_Email_Unprocessed_CL:
         field_name = 'folder_internal_email_id'
     with psycopg2.connect(host=DB_Host, dbname=DB_Name, user=DB_User, password=DB_pwd) as conn:
         with conn.cursor() as cursor:
@@ -103,4 +103,11 @@ def save_email_exception(message_id:str,message:str,runId:str):
                 conn.commit()
 
 
-                
+def save_payload(data,type):
+     data = str(data).replace("'","")
+     with psycopg2.connect(host=DB_Host, dbname=DB_Name, user=DB_User, password=DB_pwd) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                f"INSERT INTO public.json_storage (data,type) VALUES('{data}', '{type}')"
+            )
+            conn.commit()                

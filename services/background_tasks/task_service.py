@@ -3,8 +3,10 @@ import io
 import json
 import uuid
 import time
+import inspect
 from rq.job import Job
 from typing import List,Tuple,Dict,Any
+import logging
 from schemas.general_dto import ResponseDocumentDto,UploadedFileDto
 from schemas.general_enum import EmailType,APIAction
 from core.load_json import get_json_schema
@@ -15,23 +17,34 @@ from services.email_service import create_body_html_reponse_documents
 from services.doc_process_business_rule import create_response_validate_requiered_documents
 from services.open_ai_service import embed_text, push_documents_to_index_azure,generate_payload_update_shipment
 from services.azure_search_service import search_azure_ai_index
-
+from utils.global_resources import create_record_azure_insight_task
+from services.postgresql_db import save_email_exception
+import traceback
 
 def upload_documents(files:List[UploadedFileDto],shipment_id:str,email_type:str,token:str,message_id:str,list_documents: list[tuple[str, str, str, bool]],list_doc_response:list[Dict],shipment_id_uuid4:str,shipping_mark:str,country_id:str):
     list_files_unloaded: List[str] = []
-    #upload documents
-    for file in files:        
-        result: ResponseDocumentDto = upload_document_by_shipment(file,shipment_id_uuid4)
-        if not result.is_related:
-            list_files_unloaded.append(file.file_name)
-    #embed content
-    vectorize_content(list_doc_response,shipment_id,shipping_mark,country_id,shipment_id_uuid4,token,message_id)                           
-    reply_content:str = create_response_validate_requiered_documents(list_documents,list_doc_response,list_files_unloaded,shipment_id)                    
-    #send reply
-    if email_type == EmailType.microsoft:
-        outlook_send_reply_email(token, reply_content, message_id,"") 
-    if email_type == EmailType.google:
+    try:
+        #upload documents
+        for file in files:        
+            result: ResponseDocumentDto = upload_document_by_shipment(file,shipment_id_uuid4)
+            if not result.is_related:
+                list_files_unloaded.append(file.file_name)
+        reply_content:str = create_response_validate_requiered_documents(list_documents,list_doc_response,list_files_unloaded,shipment_id)                    
+        #send reply     
         gmail_send_reply_email_raw(token,message_id,reply_content)
+        #embed content
+        vectorize_content(list_doc_response,shipment_id,shipping_mark,country_id,shipment_id_uuid4,token,message_id)                           
+        # reply_content:str = create_response_validate_requiered_documents(list_documents,list_doc_response,list_files_unloaded,shipment_id)                    
+        # #send reply
+        # if email_type == EmailType.microsoft:
+        #     outlook_send_reply_email(token, reply_content, message_id,"") 
+        # if email_type == EmailType.google:
+        #     gmail_send_reply_email_raw(token,message_id,reply_content)
+    except Exception as ex:
+        traceback_str = traceback.format_exc()
+        save_email_exception("upload_documents/task",f"error_exc_stack: {str(ex)} / {traceback_str}","upload_documents")                 
+        create_record_azure_insight_task(ex,"upload_documents")
+ 
 
 def vectorize_content(list_doc_response:list[Dict],shipment_id:str,shipping_mark:str,country_id:str,shipment_id_uuid4:str,access_token: str, message_id: str):
     brasil_master = get_json_schema(APIAction.brasil_master)

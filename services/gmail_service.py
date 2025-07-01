@@ -22,7 +22,7 @@ def fetch_gmail_new_emails(access_token: str,folder_internal_email_id:str,fetch_
     }
 
     # Step 1: List unread message IDs
-    list_url = f"https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread&maxResults={fetch_limit}"
+    list_url = f"https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread+label:inbox&maxResults={fetch_limit}"
     list_response = requests.get(list_url, headers=headers)
 
     if list_response.status_code != 200:

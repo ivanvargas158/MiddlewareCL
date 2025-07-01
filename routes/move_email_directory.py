@@ -1,7 +1,7 @@
 import logging
 import azure.functions as func
 from services.outlook_service import outlook_move_email,outlook_mark_email_as_read,outlook_mark_red_flag
-from services.gmail_service import gmail_move_email
+from services.gmail_service import gmail_move_email,gmail_mark_email_as_read
 from services.postgresql_db import save_email_exception
 from utils.global_resources import create_record_azure_insight
 from schemas.general_enum import EmailType
@@ -20,6 +20,7 @@ def move_email_folder(req: func.HttpRequest) -> func.HttpResponse:
         if email_type == EmailType.microsoft:
             outlook_move_email(access_token, message_id,folder_id,target_category,folder_spam_id)
         if email_type == EmailType.google:
+            gmail_mark_email_as_read(access_token,message_id)
             gmail_move_email(access_token, message_id,folder_id)
         return func.HttpResponse("Email move folder successfully.", status_code=200)       
     except Exception as e:

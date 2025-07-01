@@ -6,7 +6,6 @@ from services.outlook_service import outlook_mark_email_as_read,outlook_mark_red
 from schemas.email_category_classification_enum import HumanMessageCategory
 from utils.global_resources import create_record_azure_insight
 from services.doc_process_service import ocr_process_document
-from core.custom_exceptions import ValidationError 
 
 def ocr_process_document_request(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function to Quote') 
@@ -26,19 +25,7 @@ def ocr_process_document_request(req: func.HttpRequest) -> func.HttpResponse:
                         }),
             mimetype="application/json",
             status_code=200,
-        )   
-    except ValidationError as ve:
-        logging.warning(f"Validation error occurred: {ve}")
-        if run_id:
-            create_record_azure_insight(ve, run_id, 'cl_shipment_request')
-            save_email_exception(message_id, str(ve), run_id)
-            outlook_mark_email_as_read(access_token, message_id)
-            outlook_mark_red_flag(access_token, message_id)
-        return func.HttpResponse(
-            json.dumps({"ValidationError": str(ve)}),
-            mimetype="application/json",
-            status_code=422,
-        )
+        )    
     except Exception as e:
         if run_id:
             try:   
@@ -46,7 +33,7 @@ def ocr_process_document_request(req: func.HttpRequest) -> func.HttpResponse:
                 save_email_exception(message_id,str(e),run_id)
             except Exception as excep_alt:
                 save_email_exception(message_id,'cl_shipment_request',run_id)      
-            outlook_mark_email_as_read(access_token,message_id)
-            outlook_mark_red_flag(access_token,message_id)
+            #outlook_mark_email_as_read(access_token,message_id)
+            #outlook_mark_red_flag(access_token,message_id)
         return func.HttpResponse(f'Handling quote request Failed.{str(e)}', status_code=400)
     

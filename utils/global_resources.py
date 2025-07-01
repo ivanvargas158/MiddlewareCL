@@ -28,6 +28,12 @@ def create_record_azure_insight(error: Exception,run_id:str,function_name:str):
     span.set_status(trace.Status(trace.StatusCode.ERROR, str(f'{error} / {run_id}')))    
     span.end()        
 
+def create_record_azure_insight_task(error: Exception,function_name:str):
+    logger.error(f'function: {function_name}: {error}', exc_info=True)
+    span = tracer.start_span(function_name)
+    span.record_exception(error)
+    span.set_status(trace.Status(trace.StatusCode.ERROR, str(f'{error} / {function_name}')))    
+    span.end()
 
 def get_expire_date(expire_in_seconds:int)->str:
     return (datetime.now(tz=timezone.utc) + timedelta(seconds=expire_in_seconds)).strftime("%Y-%m-%d %H:%M:%S.%f") + "+00"

@@ -1,7 +1,6 @@
 import requests
 import json
 from core.settings import Azure_Search_Index_Key ,Azure_Search_Index_version,Azure_Search_Index_Url
-from core.custom_exceptions import  ValidationError
 
 def search_azure_ai_index(shipping_mark: str,country_id:str,shipment_id:str=""):
     
@@ -34,7 +33,7 @@ def search_azure_ai_index(shipping_mark: str,country_id:str,shipment_id:str=""):
         return json.loads(response.content.decode("utf-8"))
         
     else:
-        raise ValidationError(f"Search failed: {response.status_code} - {response.text}")
+        raise Exception(f"Search failed: {response.status_code} - {response.text}")
 
 
 def remove_empty_fields(data):

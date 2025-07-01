@@ -4,7 +4,6 @@ import json
 from typing import Dict,Tuple,List,Any
 from core.settings import Ocr_DocumentProcess_Key,Ocr_DocumentProcess_Url
 from core.load_json import get_json_schema
-from core.custom_exceptions import ValidationError
 from schemas.general_enum import APIAction,DocumentType
 from  schemas.general_dto import CreateDocumentDto,UploadedFileDto
 from services.gmail_service import get_gmail_attachment_bytes
@@ -26,7 +25,7 @@ def ocr_process_document(message_id:str,thread_Id:str,list_attachments:list[dict
             attachmentId = attachment["attachmentId"]
             #is_isf_doc:bool = False            
             if not attachmentId :
-                raise ValidationError(errors=f"Unsupported file type")
+                raise Exception(f"Unsupported file type")
             document_bytes = get_gmail_attachment_bytes(message_id, attachmentId, token)
             file_bytesIO = io.BytesIO(document_bytes)            
             ocr_document_result = call_ocr(str(attachment["filename"]),str(attachment["mimeType"]),file_bytesIO,3) # coyntru by default is 3 = Brasil                          
@@ -96,13 +95,20 @@ def  call_ocr(file_name:str,mime_type:str,file:io.BytesIO,country_id:int)-> Dict
     headers = {
         'x-api-key': Ocr_DocumentProcess_Key
         } 
+    response = None  
     try:
-        response = requests.post(url, headers=headers, files=new_file, timeout=120)
-        response.raise_for_status()  # raises HTTPError for 4xx/5xx
-        response.encoding = "utf-8"
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        raise ValidationError(f"Request failed: {e}\nStatus: {getattr(response, 'status_code', 'No status')}\nContent: {getattr(response, 'text', 'No text')}")
+        response = requests.post(url, headers=headers, files=new_file, timeout=5000)
+        if response.status_code == 200: 
+            return json.loads(response.content.decode("utf-8")) 
+        else:            
+            raise Exception(f"HTTP {response.status_code} error in call_ocr: {response.text}")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()   
+        raise Exception(f"FIleName: {file_name} Request failed: {e}\nStatus: {getattr(response, 'status_code', 'No status')}\nContent: {getattr(response, 'text', 'No text')}")
+        
+
+ 
 
 def  list_document_by_country(country_id:int) -> list[tuple[str, str, str, bool]]:
     try: 

@@ -6,7 +6,7 @@ from schemas.general_dto import CreateDocumentDto,ResponseDocumentDto,UploadedFi
 from core.settings import Cargologik_Url,Cargologik_Username,Cargologik_Password
 from services.email_service import create_new_shipment_reponse,generate_update_shipment_html,create_complete_reponse_documents
 from services.gmail_service import gmail_send_reply_email_raw
-
+from postgresql_db import save_payload
 def create_token()->str:
     headers = {
         'Content-Type': 'application/json'
@@ -31,6 +31,7 @@ def create_shipment(payload:str)->CreateDocumentDto:
     'Authorization': f'Bearer {token}'
     }
 
+    save_payload(payload,"create_shipment_cl")
     response = requests.request("POST", f'{Cargologik_Url}shipments/create', headers=headers, data=payload)
              
     if response.status_code == 200:
@@ -90,7 +91,7 @@ def update_shipment_cl(payload:str,shipment_id:str,access_token: str, message_id
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'
     }
-
+    save_payload(payload,"update_shipment_cl")
     response = requests.request("PUT", f'{Cargologik_Url}shipments/update', headers=headers, data=payload)
     shipment_updated:str=""         
     if response.status_code == 200:
